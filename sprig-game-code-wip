@@ -1,0 +1,171 @@
+const player = "p";
+const chest = "c";
+const item = "i";
+const wall = "w";
+
+setLegend(
+  [player, bitmap`
+................
+...CCCC.........
+..C.............
+.C..............
+C..CCC..CCC.....
+C.C...CLCLLL....
+C.CL...CCL3.LL..
+C.LL..CCC...LC..
+.C...CCC.C...C..
+..CCCCC...CCC...
+...CCCCCC.......
+..CC....CC......
+..C......C......
+..C......C......
+.LL......LL.....
+................`],
+  [chest, bitmap`
+L1FFFFFFFFFFFF1L
+1100000000000011
+F00000000000000F
+F000000CC000000F
+FFFFFFCCCCFFFFFF
+F000000CC000000F
+F00000000000000F
+F00000000000000F
+F00000000000000F
+F00000000000000F
+F00000000000000F
+F00000000000000F
+F00000000000000F
+F00000000000000F
+1100000000000011
+L1FFFFFFFFFFFF1L`],
+  [item, bitmap`
+2222288888822222
+288888HHHH888882
+28HHHH8888HHHH82
+28H8888HH8888H82
+28H8HHHHHHHH8H82
+88H8H888888H8H88
+8HH8H8HHHH8H88H8
+8H8HH8H33H8HH8H8
+8H8HH8H33H8HH8H8
+8H88H8HHHH8H88H8
+88H8H888888H8H88
+28H8HHHHHHHH8H82
+28H8888HH8888H82
+28HHHH8888HHHH82
+288888HHHH888882
+2222288888822222`],
+  [wall, bitmap`
+0000000000000000
+0300000000000030
+0330000000000330
+0033000000003300
+0003300000033000
+0000330000330000
+0000033003300000
+0000003333000000
+0000000330000000
+0000003333000000
+0000033003300000
+0000330000330000
+0003300000033000
+0033000000003300
+0330000000000330
+0000000000000000`]
+);
+
+let level = 0;
+let itemCollected = false;
+const levels = [
+  map`
+i.c
+...
+p..`,
+  map`
+iw.c
+.w.w
+...w
+p..w`,
+  map`
+iw...
+.w.w.
+.w.w.
+.w.w.
+p..wc`,
+  map`
+i..w...
+ww.w.w.
+ww.w.w.
+.....w.
+p...ww.
+wwww...
+c....ww`,
+  map`
+i.......wi
+wwwwwww.w.
+ww...ww.w.
+w..w..w.w.
+w.www.w.w.
+w.wpw.w.w.
+w.w.w.w.w.
+..w.......
+.wwww.wwww
+iw.......c`
+];
+
+ let currentLevel = levels[level];
+setMap(currentLevel);
+
+setPushables({
+  [player]: []
+});
+
+// inputs for player movement control
+onInput("w", () => {
+  getFirst(player).y -= 1; // go up
+  checkPosition();
+});
+
+onInput("a", () => {
+  getFirst(player).x -= 1; // go left
+  checkPosition();
+});
+
+onInput("s", () => {
+  getFirst(player).y += 1; // positive y is downwards
+  checkPosition();
+});
+
+onInput("d", () => {
+  getFirst(player).x += 1;
+  checkPosition();
+});
+
+function checkPosition() {
+  const playerPos = getFirst(player);
+  
+  // Check if player collected the item
+  const spritesInTile = getTile(playerPos.x, playerPos.y);
+  const itemSpriteIndex = spritesInTile.findIndex(sprite => sprite.type === item);
+
+  if (itemSpriteIndex !== -1) {
+    itemCollected = true;
+    spritesInTile[itemSpriteIndex].remove(); // Remove the item sprite from the tile
+  }
+
+  // Only proceed to check the chest if the item has been collected
+  if (itemCollected) {
+    // Check if player reached the chest
+    if (getTile(playerPos.x, playerPos.y).includes(chest)) {
+      
+      level = level+1;
+       currentLevel = levels[level];
+      setMap(levels[level]);
+      
+   if (level > 4)
+   {
+        addText("Good stuff!, you won!", { y: 4, color: color`3` });
+      }
+    }
+  }
+}
